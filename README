@@ -1,0 +1,16 @@
+This is a simple interpreter for logical expressions
+
+Usage:
+    solver <symtab> [-f|--file formula-file]
+
+The file "symtab" must contain a symbol table, with the following syntax:
+
+<Symbol Number>: <1|0>
+...
+
+Expressions are concluded with an ';'
+
+If you don't provide a formula-file, the program will run in interactive mode.
+
+Use "help" to get a list of available commands.
+
