@@ -14,4 +14,7 @@ typedef struct logsym logsym;
 bool get_symbol_value(int num);
 void print_symtab();
 
+void reset_symbols();
+void increment_symbols(logsym* start);
+
 #endif

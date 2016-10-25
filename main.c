@@ -7,6 +7,7 @@
 #include "parser.tab.h"
 
 logsym* symtab;
+int num_symbols;
 
 void add_symbol(int num, bool value);
 void read_symtab(const char* file);
@@ -15,11 +16,13 @@ void destroy_symtab(logsym* sym);
 extern FILE* yyin;
 
 void usage(const char* p) {
-    printf("Usage: %s <symbol_table> [-f|--file formula-file]\n", p);
+    printf("Usage: %s <symbol_table> [-e|--enumerate] [-f|--file formula-file]\n", p);
     exit(0);
 }
 
 int main(int argc, char** argv) {
+    bool do_enumerate = false;
+    num_symbols = 0;
     if (argc < 2)
         usage(argv[0]);
     else if (argc >= 4) {
@@ -32,16 +35,33 @@ int main(int argc, char** argv) {
                     exit(1);
                 }
                 yyin = f; 
-            }
+            } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--enumerate") == 0) {
+                do_enumerate = true;
+            }    
         }
     } else {
         yyin = stdin;
     }
 
-    symtab = NULL;
-    read_symtab(argv[1]);
-
-    yyparse();
+    if (do_enumerate) {
+        if (yyin == stdin) {
+            printf("ERROR: Option --enumerate requires formula-file!\n");
+            exit(1);
+        }
+        symtab = NULL;
+        read_symtab(argv[1]);
+        reset_symbols();
+        for (unsigned long i = 0; i < (1 << num_symbols); i++) {
+            print_symtab();
+            yyparse();
+            rewind(yyin);
+            increment_symbols(symtab);
+        } 
+    } else {
+        symtab = NULL;
+        read_symtab(argv[1]);
+        yyparse();
+    }
 
     if (yyin != stdin)
         fclose(yyin);
@@ -93,6 +113,7 @@ void add_symbol(int num, bool value) {
         new->next = symtab;
         symtab = new;
     }
+    num_symbols++;
 }
 
 void read_symtab(const char* file) {
@@ -121,4 +142,24 @@ void print_symtab() {
         sym = sym->next;
     }
     printf("------ End of Table ------\n");
+}
+
+void reset_symbols() {
+    logsym* sym = symtab;
+    while (sym) {
+        sym->value = false;
+        sym = sym->next;
+    }
+}
+
+void increment_symbols(logsym* start) {
+    logsym* sym = start;
+    if (!sym)
+        return;
+    if (sym->value) {
+        sym->value = false;
+        increment_symbols(sym->next);
+    } else {
+        sym->value = true;
+    }
 }

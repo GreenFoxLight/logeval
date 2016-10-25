@@ -1,7 +1,7 @@
 This is a simple interpreter for logical expressions
 
 Usage:
-    solver <symtab> [-f|--file formula-file]
+    solver <symtab> [-e|--enumerate] [-f|--file formula-file]
 
 The file "symtab" must contain a symbol table, with the following syntax:
 
@@ -11,6 +11,9 @@ The file "symtab" must contain a symbol table, with the following syntax:
 Expressions are concluded with an ';'
 
 If you don't provide a formula-file, the program will run in interactive mode.
+
+Passing --enumerate requires the --file option and will enumerate all possible
+interpretations of the symbol table.
 
 Use "help" to get a list of available commands.
 
