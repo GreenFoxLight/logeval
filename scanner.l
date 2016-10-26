@@ -69,6 +69,8 @@ WHITESPACE [ \t\n]
 
 "->"                    { return IMPL; }
 
+"<->"                   { return EQL; }
+
 "!"                     { return NOT; }
 
 

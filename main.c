@@ -12,8 +12,11 @@ int num_symbols;
 void add_symbol(int num, bool value);
 void read_symtab(const char* file);
 void destroy_symtab(logsym* sym);
+void insert_into_logtab(char* tab);
 
 extern FILE* yyin;
+bool result;
+bool is_interactive;
 
 void usage(const char* p) {
     printf("Usage: %s <symbol_table> [-e|--enumerate] [-f|--file formula-file]\n", p);
@@ -22,6 +25,7 @@ void usage(const char* p) {
 
 int main(int argc, char** argv) {
     bool do_enumerate = false;
+    bool use_formula_file = false;
     num_symbols = 0;
     if (argc < 2)
         usage(argv[0]);
@@ -34,6 +38,7 @@ int main(int argc, char** argv) {
                     fprintf(stderr, "Error while opening file %s!\n", argv[i+1]);
                     exit(1);
                 }
+                use_formula_file = true;
                 yyin = f; 
             } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--enumerate") == 0) {
                 do_enumerate = true;
@@ -44,23 +49,46 @@ int main(int argc, char** argv) {
     }
 
     if (do_enumerate) {
-        if (yyin == stdin) {
+        is_interactive = false;
+        char* logtab = NULL;
+        if (!use_formula_file) {
             printf("ERROR: Option --enumerate requires formula-file!\n");
             exit(1);
         }
         symtab = NULL;
         read_symtab(argv[1]);
         reset_symbols();
+        logtab = (char*)malloc((num_symbols + 1) * (1 << num_symbols)); 
         for (unsigned long i = 0; i < (1 << num_symbols); i++) {
-            print_symtab();
             yyparse();
             rewind(yyin);
+            insert_into_logtab(logtab + i * (num_symbols + 1));
             increment_symbols(symtab);
-        } 
+        }
+       
+        /* print logic table */
+        logsym* sym = symtab;
+        while (sym) {
+            printf("A%d\t", sym->num);
+            sym = sym->next;
+        }
+        printf("| R\n");
+        for (unsigned long i = 0; i < (1 << num_symbols); i++) {
+            for (int j = 0; j < num_symbols; j++) {
+                printf("%d\t", *logtab);
+                logtab++;
+            }
+            printf("| %d\n", *logtab);
+            logtab++;
+        }
+
+        free(logtab); 
     } else {
+        is_interactive = true;
         symtab = NULL;
         read_symtab(argv[1]);
         yyparse();
+        printf("Result: %d\n", result);
     }
 
     if (yyin != stdin)
@@ -162,4 +190,14 @@ void increment_symbols(logsym* start) {
     } else {
         sym->value = true;
     }
+}
+
+void insert_into_logtab(char* col) {
+    logsym* sym = symtab;
+    while (sym) {
+        *col = sym->value;
+        sym = sym->next;
+        col++;
+    }
+    *col = result;
 }

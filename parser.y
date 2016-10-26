@@ -7,6 +7,8 @@ int yylex(void);
 
 void yyerror(const char*);
 
+extern bool result;
+extern bool is_interactive;
 %}
 
 %require "3.0.4"
@@ -24,9 +26,10 @@ void yyerror(const char*);
 %type <bool> formula 
 
 /* define operator precedence */
-%precedence NOT
-%left AND OR
+%left EQL
 %left IMPL
+%left AND OR
+%precedence NOT
 
 %nonassoc LBRACKET
 %nonassoc RBRACKET
@@ -35,7 +38,7 @@ void yyerror(const char*);
 %%
 line:
     %empty
-    | line formula[f] ';' { printf("\nResult: %d\n", $f); }
+    | line formula[f] ';' { result = $f; if (is_interactive) printf("\nResult: %d\n", result); }
     ;
 
 formula:
@@ -48,6 +51,9 @@ formula:
                 } else {
                     $$ = true;
                 }
+            }
+        | formula[l] EQL formula[r] {
+                $$ = ( $l == $r );
             }
         | NOT formula %prec NOT { $$ = !$2; }
         | LBRACKET formula RBRACKET { $$ = $2; }
