@@ -57,6 +57,7 @@ WHITESPACE [ \t\n]
                             printf("   &  - Logical AND\n");
                             printf("   |  - Logical OR\n");
                             printf("   -> - Implication\n");
+                            printf("  <-> - Equivalence\n");
                             printf("   0  - Constant false\n");
                             printf("   1  - Constant true\n");
                         }

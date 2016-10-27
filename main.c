@@ -12,20 +12,24 @@ int num_symbols;
 void add_symbol(int num, bool value);
 void read_symtab(const char* file);
 void destroy_symtab(logsym* sym);
+
 void insert_into_logtab(char* tab);
+void print_logtab_ascii(char* tab);
+void print_logtab_latex(char* tab);
 
 extern FILE* yyin;
 bool result;
 bool is_interactive;
 
 void usage(const char* p) {
-    printf("Usage: %s <symbol_table> [-e|--enumerate] [-f|--file formula-file]\n", p);
+    printf("Usage: %s <symbol_table> [-l|--latex] [-e|--enumerate] [-f|--file formula-file]\n", p);
     exit(0);
 }
 
 int main(int argc, char** argv) {
     bool do_enumerate = false;
     bool use_formula_file = false;
+    bool print_as_latex = false;
     num_symbols = 0;
     if (argc < 2)
         usage(argv[0]);
@@ -39,10 +43,13 @@ int main(int argc, char** argv) {
                     exit(1);
                 }
                 use_formula_file = true;
-                yyin = f; 
+                yyin = f;
+                i++; /* skip filename */ 
             } else if (strcmp(argv[i], "-e") == 0 || strcmp(argv[i], "--enumerate") == 0) {
                 do_enumerate = true;
-            }    
+            } else if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--latex") == 0) {
+                print_as_latex = true;
+            } 
         }
     } else {
         yyin = stdin;
@@ -65,23 +72,11 @@ int main(int argc, char** argv) {
             insert_into_logtab(logtab + i * (num_symbols + 1));
             increment_symbols(symtab);
         }
+        if (print_as_latex)
+            print_logtab_latex(logtab);
+        else
+            print_logtab_ascii(logtab);
        
-        /* print logic table */
-        logsym* sym = symtab;
-        while (sym) {
-            printf("A%d\t", sym->num);
-            sym = sym->next;
-        }
-        printf("| R\n");
-        for (unsigned long i = 0; i < (1 << num_symbols); i++) {
-            for (int j = 0; j < num_symbols; j++) {
-                printf("%d\t", *logtab);
-                logtab++;
-            }
-            printf("| %d\n", *logtab);
-            logtab++;
-        }
-
         free(logtab); 
     } else {
         is_interactive = true;
@@ -130,6 +125,7 @@ void add_symbol(int num, bool value) {
         symtab->num = num;
         symtab->value = value;
         symtab->next = NULL;
+        symtab->prev = NULL;
     } else {
         logsym* new = (logsym*)malloc(sizeof(logsym));
         if (!new) {
@@ -139,6 +135,8 @@ void add_symbol(int num, bool value) {
         new->num = num;
         new->value = value;
         new->next = symtab;
+        new->prev = NULL;
+        symtab->prev = new;
         symtab = new;
     }
     num_symbols++;
@@ -194,10 +192,64 @@ void increment_symbols(logsym* start) {
 
 void insert_into_logtab(char* col) {
     logsym* sym = symtab;
+    if (!sym)
+        return;
+    while (sym->next)
+        sym = sym->next;
     while (sym) {
         *col = sym->value;
-        sym = sym->next;
+        sym = sym->prev;
         col++;
     }
     *col = result;
 }
+
+void print_logtab_latex(char* tab) {
+    printf("\\begin{tabular}{");
+    for (int i = 0; i < num_symbols; i++)
+        printf("c");
+    printf("|c}\n");
+    logsym* sym = symtab;
+    if (!sym)
+        return;
+    while (sym->next)
+        sym = sym->next;
+    while (sym) {
+        printf("A%d & ", sym->num);
+        sym = sym->prev;
+    }
+    printf("& R\\\\\n");
+    printf("\\hline\n");
+    for (int i = 0; i < (1 << num_symbols); i++) {
+        for (int j = 0; j < num_symbols; j++) {
+            printf("%d & ", *tab);
+            tab++;
+        }
+        printf("%d \\\\\n", *tab);
+        tab++;
+    }
+    printf("\\end{tabular}\n");
+}
+
+void print_logtab_ascii(char* tab) {
+    /* print logic table */
+    logsym* sym = symtab;
+    if (!sym)
+        return;
+    while (sym->next)
+        sym = sym->next;
+    while (sym) {
+        printf("A%d\t", sym->num);
+        sym = sym->prev;
+    }
+    printf("| R\n");
+    for (unsigned long i = 0; i < (1 << num_symbols); i++) {
+        for (int j = 0; j < num_symbols; j++) {
+            printf("%d\t", *tab);
+            tab++;
+        }
+        printf("| %d\n", *tab);
+        tab++;
+    }
+}
+

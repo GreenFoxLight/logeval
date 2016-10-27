@@ -7,6 +7,7 @@ struct logsym {
     int num;
     bool value;
 
+    struct logsym* prev;
     struct logsym* next;
 };
 typedef struct logsym logsym;
