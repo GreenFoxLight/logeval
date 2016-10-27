@@ -6,15 +6,15 @@ LDFLAGS:=-macosx_version_min 10.12 -lSystem
 
 OBJS:=main.o
 
-parser:=parser.tab.o
-parser_h:=parser.tab.h
+parser:=./parser.tab.o
+parser_h:=./parser.tab.h
 
-scanner:=lex.yy.o
+scanner:=./lex.yy.o
 
-all: solver
+all: eval 
 
-solver: ${OBJS} ${parser} ${scanner}
-	${LD} -o solver ${LDFLAGS} ${OBJS} ${parser} ${scanner}
+eval: ${OBJS} ${parser} ${scanner}
+	${LD} -o eval ${LDFLAGS} ${OBJS} ${parser} ${scanner}
 
 ${parser}: parser.y
 	bison -d parser.y
@@ -31,4 +31,4 @@ ${parser_h}: parser.y
 	bison -d parser.y
 
 clean:
-	rm -f parser.tab.c parser.tab.h lex.yy.c ${scanner} ${parser} ${OBJS} solver
+	rm ./parser.tab.c ./parser.tab.h ./lex.yy.c ${scanner} ${parser} ${OBJS} ./eval 
