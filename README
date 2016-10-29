@@ -1,7 +1,7 @@
 This is a simple interpreter for logical expressions
 
 Usage:
-    eval <symtab> [-e|--enumerate] [-f|--file formula-file]
+    eval <symtab> [-e|--enumerate] [-l|--latex] [-d|--debug] [-f|--file formula-file]
 
 The file "symtab" must contain a symbol table, with the following syntax:
 
@@ -15,5 +15,10 @@ If you don't provide a formula-file, the program will run in interactive mode.
 Passing --enumerate requires the --file option and will enumerate all possible
 interpretations of the symbol table.
 
+Passing --latex requires the --enumerate option and will change the output to latex code.
+
+Passing --debug enables bison debug messages, which enables you to see what the parser is doing.
+
 Use "help" to get a list of available commands.
+
 

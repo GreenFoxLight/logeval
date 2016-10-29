@@ -22,7 +22,7 @@ bool result;
 bool is_interactive;
 
 void usage(const char* p) {
-    printf("Usage: %s <symbol_table> [-l|--latex] [-e|--enumerate] [-f|--file formula-file]\n", p);
+    printf("Usage: %s <symbol_table> [-l|--latex] [-d|--debug] [-e|--enumerate] [-f|--file formula-file]\n", p);
     exit(0);
 }
 
@@ -49,6 +49,8 @@ int main(int argc, char** argv) {
                 do_enumerate = true;
             } else if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--latex") == 0) {
                 print_as_latex = true;
+            } else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--debug") == 0) {
+                yydebug = 1;
             } 
         }
     } else {

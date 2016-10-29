@@ -16,6 +16,7 @@
 %option nounput
 %option noinput always-interactive
 %option batch
+%option yylineno
 
 DIGIT    [0-9]
 WHITESPACE [ \t\n]

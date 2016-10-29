@@ -11,6 +11,8 @@ extern bool result;
 extern bool is_interactive;
 %}
 
+%debug
+
 %require "3.0.4"
 %code requires
 {
@@ -65,5 +67,5 @@ formula:
 %%
 
 void yyerror(const char* m) {
-    fprintf(stderr, "%s", m);
+    fprintf(stderr, "%s\n", m);
 }
